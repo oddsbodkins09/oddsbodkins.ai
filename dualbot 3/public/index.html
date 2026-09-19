@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Zelus AI</title>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/atom-one-dark.min.css">
+<link rel="stylesheet" href="style.css" />
+<script src="https://cdnjs.cloudflare.com/ajax/libs/marked/4.3.0/marked.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/contrib/auto-render.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/dompurify/3.0.6/purify.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+</head>
+<body>
+
+  <header class="bar">
+    <h1>Zelus AI</h1>
+    <div class="switcher" role="tablist" aria-label="Choose a bot">
+      <button class="tab tab-straight is-active" data-persona="straight" role="tab" aria-selected="true">
+        Straight Bot
+      </button>
+      <button class="tab tab-eli5" data-persona="eli5" role="tab" aria-selected="false">
+        ELI5 Bot
+      </button>
+      <button class="tab tab-code" data-persona="code" role="tab" aria-selected="false">
+        Code Bot
+      </button>
+    </div>
+  </header>
+
+  <main id="thread" class="thread" aria-live="polite">
+    <div class="empty-state" id="emptyState">
+      <p class="empty-headline">Same question. Very different answers.</p>
+      <p class="empty-sub">Ask anything, attach a photo, or try Code Bot.</p>
+    </div>
+  </main>
+
+  <div id="imagePreview" class="image-preview" hidden>
+    <img id="imagePreviewImg" alt="Selected image" />
+    <button type="button" id="removeImageBtn" aria-label="Remove image">&times;</button>
+  </div>
+
+  <form id="composer" class="composer">
+    <label for="imageInput" class="icon-btn" title="Attach a photo of a question">+</label>
+    <input id="imageInput" type="file" accept="image/*" capture="environment" hidden />
+    <button type="button" id="micBtn" class="icon-btn" title="Speak your question">&#127908;</button>
+    <input
+      id="messageInput"
+      type="text"
+      placeholder="Ask something..."
+      autocomplete="off"
+    />
+    <button type="submit" id="sendBtn">Send</button>
+  </form>
+
+  <div id="lightbox" hidden>
+    <button id="lightboxClose" type="button">&times;</button>
+    <img id="lightboxImg" alt="Expanded" />
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>
