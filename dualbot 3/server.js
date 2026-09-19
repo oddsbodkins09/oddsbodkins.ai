@@ -101,23 +101,41 @@ app.post("/api/chat", async (req, res) => {
     }
     contents.push({ role: "user", parts });
 
-    const response = await fetch(
-      `https://generativelanguage.googleapis.com/v1beta/models/${MODEL}:generateContent?key=${API_KEY}`,
-      {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          contents,
-          systemInstruction: { parts: [{ text: config.system }] },
-          generationConfig: { maxOutputTokens: 1500 },
-        }),
-      }
-    );
+    let response;
+    let lastErrText = "";
+    const MAX_ATTEMPTS = 3;
+    for (let attempt = 1; attempt <= MAX_ATTEMPTS; attempt++) {
+      response = await fetch(
+        `https://generativelanguage.googleapis.com/v1beta/models/${MODEL}:generateContent?key=${API_KEY}`,
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            contents,
+            systemInstruction: { parts: [{ text: config.system }] },
+            generationConfig: { maxOutputTokens: 1500 },
+          }),
+        }
+      );
+
+      if (response.ok) break;
+
+      lastErrText = await response.text();
+      const isOverloaded = response.status === 503 || response.status === 429;
+      if (!isOverloaded || attempt === MAX_ATTEMPTS) break;
+
+      console.warn(`Gemini overloaded (attempt ${attempt}), retrying...`);
+      await new Promise((r) => setTimeout(r, attempt * 800));
+    }
 
     if (!response.ok) {
-      const errText = await response.text();
-      console.error("Gemini API error:", errText);
-      return res.status(502).json({ error: "Upstream API error." });
+      console.error("Gemini API error:", lastErrText);
+      return res.status(502).json({
+        error:
+          response.status === 503
+            ? "The AI is under heavy load right now - please try again in a moment."
+            : "Upstream API error.",
+      });
     }
 
     const data = await response.json();
