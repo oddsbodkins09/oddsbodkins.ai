@@ -63,7 +63,9 @@ body {
 .msg-bot.persona-eli5 { font-family: 'Baloo 2', 'IBM Plex Sans', sans-serif; font-size: 15.5px; }
 .msg-bot.persona-straight { font-family: 'IBM Plex Mono', monospace; font-size: 14px; }
 .msg-bot.persona-code { font-family: 'IBM Plex Sans', sans-serif; font-size: 14.5px; }
-.msg-bot.typing .msg-label::after { content: " - thinking"; color: var(--text-muted); font-weight: 400; }
+.thinking-row { display: flex; align-items: center; padding: 4px 0; }
+.thinking-logo { width: 34px; height: 34px; border-radius: 9px; animation: logo-pulse 1.1s ease-in-out infinite; }
+@keyframes logo-pulse { 0%, 100% { opacity: 0.55; transform: scale(0.92); filter: drop-shadow(0 0 0px var(--accent-color)); } 50% { opacity: 1; transform: scale(1.05); filter: drop-shadow(0 0 8px var(--accent-color)); } }
 .msg img.msg-image { max-width: 220px; border-radius: 10px; display: block; margin-top: 6px; cursor: zoom-in; }
 
 .msg-bot h1, .msg-bot h2, .msg-bot h3 { margin: 10px 0 6px; font-weight: 600; color: var(--text); }
