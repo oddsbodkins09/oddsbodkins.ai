@@ -93,7 +93,30 @@ function wireCodeBlocks(container) {
     wrap.appendChild(btn);
   });
 }
+function addThinkingBubble(persona) {
+  emptyState.style.display = "none";
+  const el = document.createElement("div");
+  el.className = `msg msg-bot persona-${persona} typing`;
+  el.style.setProperty("--accent-color", ACCENTS[persona]);
 
+  const label = document.createElement("span");
+  label.className = "msg-label";
+  label.textContent = LABELS[persona];
+  el.appendChild(label);
+
+  const row = document.createElement("div");
+  row.className = "thinking-row";
+  const img = document.createElement("img");
+  img.className = "thinking-logo";
+  img.src = "icon-192.png";
+  img.alt = "";
+  row.appendChild(img);
+  el.appendChild(row);
+
+  thread.appendChild(el);
+  thread.scrollTop = thread.scrollHeight;
+  return el;
+}
 function addBubble(role, text, persona, imageDataUrl) {
   emptyState.style.display = "none";
   const el = document.createElement("div");
@@ -272,8 +295,7 @@ async function handleSend(e) {
   imagePreview.hidden = true;
   sendBtn.disabled = true;
 
-  const typingEl = addBubble("bot", "...", persona);
-  typingEl.classList.add("typing");
+ const typingEl = addThinkingBubble(persona);
 
   try {
     const res = await fetch("/api/chat", {
