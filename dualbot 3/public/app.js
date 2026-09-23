@@ -67,7 +67,14 @@ function renderHistory() {
   thread.querySelectorAll(".msg").forEach((el) => el.remove());
   const hist = histories[activePersona];
   emptyState.style.display = hist.length ? "none" : "block";
-  hist.forEach((turn) => addBubble(turn.role, turn.content, activePersona, turn.imageDataUrl, false));
+    hist.forEach((turn) =>
+    addBubble(
+      turn.role === "assistant" ? "bot" : "user",
+      turn.content,
+      activePersona,
+      turn.imageDataUrl
+    )
+  );
   thread.scrollTop = thread.scrollHeight;
 }
 
