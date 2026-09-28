@@ -229,3 +229,9 @@ body {
   .image-preview { padding: 0 16px; }
   .msg { max-width: 92%; }
 }
+/* Custom font override for the Straight Bot answers only */
+.thread .message-straight .message-content,
+.thread .message[data-persona="straight"] .message-content,
+.message-text-straight {
+  font-family: -apple-system, BlinkMacSystemFont, "Poppins", "Segoe UI", sans-serif !important;
+}
