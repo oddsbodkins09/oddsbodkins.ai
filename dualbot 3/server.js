@@ -153,6 +153,52 @@ app.post("/api/chat", async (req, res) => {
   }
 });
 
+app.post("/api/title", async (req, res) => {
+  try {
+    const { message, reply } = req.body;
+    if (!API_KEY) {
+      return res.status(500).json({ error: "No GEMINI_API_KEY set." });
+    }
+    const prompt =
+      "Summarize the topic of this exchange in 3 to 5 words, title-case, " +
+      "no punctuation at the end, no quotes around it, no explanation - " +
+      "just the short title itself.\n\nUser: " +
+      (message || "(sent an image)") +
+      "\n\nAssistant: " +
+      (reply || "").slice(0, 500);
+
+    const response = await fetch(
+      `https://generativelanguage.googleapis.com/v1beta/models/${MODEL}:generateContent?key=${API_KEY}`,
+      {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          contents: [{ role: "user", parts: [{ text: prompt }] }],
+          generationConfig: { maxOutputTokens: 20 },
+        }),
+      }
+    );
+
+    if (!response.ok) {
+      return res.status(502).json({ error: "Could not generate title." });
+    }
+
+    const data = await response.json();
+    let title =
+      data.candidates &&
+      data.candidates[0] &&
+      data.candidates[0].content &&
+      data.candidates[0].content.parts &&
+      data.candidates[0].content.parts.map((p) => p.text || "").join("");
+    title = (title || "New Chat").trim().replace(/^["']|["']$/g, "").slice(0, 40);
+
+    res.json({ title: title || "New Chat" });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: "Something went wrong." });
+  }
+});
+
 app.listen(PORT, () => {
   console.log(`Zelus AI running at http://localhost:${PORT}`);
 });
