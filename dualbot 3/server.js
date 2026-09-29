@@ -198,6 +198,51 @@ app.post("/api/title", async (req, res) => {
     res.status(500).json({ error: "Something went wrong." });
   }
 });
+// Image Generation Endpoint using Imagen 3
+app.post('/api/generate-image', async (req, res) => {
+  try {
+    const { prompt } = req.body;
+    if (!prompt) {
+      return res.status(400).json({ error: 'Prompt is required' });
+    }
+
+    if (!API_KEY) {
+      return res.status(500).json({ error: 'Gemini API key is missing on the server.' });
+    }
+
+    // Direct HTTP call to Google's Imagen API using your existing API_KEY setup
+    const response = await fetch(
+      `https://googleapis.com{API_KEY}`,
+      {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          prompt: prompt,
+          numberOfImages: 1,
+          outputMimeType: 'image/jpeg',
+          aspectRatio: '1:1',
+        }),
+      }
+    );
+
+    if (!response.ok) {
+      const errorData = await response.json();
+      console.error('Google Imagen API Error Details:', errorData);
+      return res.status(response.status).json({ error: 'Google Imagen API error occurred.' });
+    }
+
+    const data = await response.json();
+    
+    // Extract the raw base64 image string from Google's response format
+    const base64Image = data.generatedImages[0].image.imageBytes;
+    
+    // Send it cleanly back to your frontend app.js handler
+    res.json({ imageUrl: `data:image/jpeg;base64,${base64Image}` });
+  } catch (error) {
+    console.error('Image Generation Server Error:', error);
+    res.status(500).json({ error: 'Failed to generate image structure.' });
+  }
+});
 
 app.listen(PORT, () => {
   console.log(`Zelus AI running at http://localhost:${PORT}`);
