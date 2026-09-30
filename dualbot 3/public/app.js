@@ -487,79 +487,7 @@ async function handleSend(e) {
 }
 
 form.addEventListener("submit", handleSend);
-sendBtn.addEventListener("click", handleSend);
-input.addEventListener("keydown", (e) => {
-  if (e.key === "Enter") handleSend(e);
-});
-
-loadSaved();
-setPersona("straight");
-// Frontend image generation engine
-async function handleImageGeneration(promptText) {
-  const botMsgDiv = document.createElement("div");
-  botMsgDiv.className = `message message-assistant message-${activePersona}`;
-  const contentDiv = document.createElement("div");
-  contentDiv.className = "message-content";
-  contentDiv.innerHTML = `<p class="message-text-${activePersona}">🎨 Generating your image for: "<em>${promptText}</em>"... Please wait.</p>`;
-  botMsgDiv.appendChild(contentDiv);
-  thread.appendChild(botMsgDiv);
-  thread.scrollTop = thread.scrollHeight;
-  if (emptyState) emptyState.style.display = "none";
-
-  try {
-    const response = await fetch('/api/generate-image', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ prompt: promptText })
-    });
-    const data = await response.json();
-    if (!response.ok || data.error) throw new Error(data.error || "Generation failed");
-
-    contentDiv.innerHTML = `
-      <p class="message-text-${activePersona}">Here is your generated image:</p>
-      <img src="${data.imageUrl}" class="chat-generated-image" style="max-width: 100%; border-radius: 8px; margin-top: 8px; cursor: pointer; display: block;" alt="AI Generated Graphic" />
-    `;
-
-    const generatedImgElement = contentDiv.querySelector('.chat-generated-image');
-    if (generatedImgElement && lightbox && lightboxImg) {
-      generatedImgElement.addEventListener('click', () => {
-        lightboxImg.src = data.imageUrl;
-        lightbox.removeAttribute('hidden');
-      });
-    }
-
-    const activeChats = chatsByPersona[activePersona];
-    const currentChat = activeChats.find(c => c.id === activeChatId[activePersona]);
-    if (currentChat) {
-      currentChat.messages.push({ role: "assistant", content: `![AI Generated Graphic](${data.imageUrl})` });
-      if (typeof saveToStorage === "function") saveToStorage();
-    }
-  } catch (err) {
-    console.error("Frontend image error:", err);
-    contentDiv.innerHTML = `<p class="message-text-${activePersona}" style="color: #ff6b6b;">❌ Image Generation Failed: ${err.message}</p>`;
-  }
-  thread.scrollTop = thread.scrollHeight;
-}
-// 2. Main submission listeners with built-in image intercept engine
-if (form && input) {
-  form.removeEventListener("submit", handleSend); // Clear original listener to prevent double fires
-  form.addEventListener("submit", (e) => {
-    const textValue = input.value.trim();
-    if (textValue.startsWith("/image ")) {
-      e.preventDefault();
-      e.stopPropagation();
-      const targetPrompt = textValue.replace("/image ", "").trim();
-      input.value = ""; 
-      if (targetPrompt.length > 0) handleImageGeneration(targetPrompt);
-    } else {
-      handleSend(e);
-    }
-  });
-}
-
-if (sendBtn) {
-  sendBtn.removeEventListener("click", handleSend);
-    sendBtn.addEventListener("click", (e) => {
+  sendBtn.addEventListener("click", (e) => {
     const textValue = input.value.trim();
     if (textValue.startsWith("/image ")) {
       e.preventDefault();
@@ -568,6 +496,7 @@ if (sendBtn) {
       input.value = "";
       if (targetPrompt.length > 0) handleImageGeneration(targetPrompt);
     } else {
+      if (e && e.preventDefault) e.preventDefault();
       handleSend(e);
     }
   });
@@ -583,6 +512,7 @@ if (sendBtn) {
           input.value = "";
           if (targetPrompt.length > 0) handleImageGeneration(targetPrompt);
         } else {
+          if (e && e.preventDefault) e.preventDefault(); // THIS STOPS THE RELOAD!
           handleSend(e);
         }
       }
