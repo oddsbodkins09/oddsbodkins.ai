@@ -559,7 +559,7 @@ if (form && input) {
 
 if (sendBtn) {
   sendBtn.removeEventListener("click", handleSend);
-  sendBtn.addEventListener("click", (e) => {
+    sendBtn.addEventListener("click", (e) => {
     const textValue = input.value.trim();
     if (textValue.startsWith("/image ")) {
       e.preventDefault();
@@ -571,19 +571,20 @@ if (sendBtn) {
       handleSend(e);
     }
   });
-}
 
-if (input) {
-  input.addEventListener("keydown", (e) => {
-    if (e.key === "Enter") {
-      const textValue = input.value.trim();
-      if (textValue.startsWith("/image ")) {
-        e.preventDefault();
-        e.stopPropagation();
-        const targetPrompt = textValue.replace("/image ", "").trim();
-        input.value = "";
-        if (targetPrompt.length > 0) handleImageGeneration(targetPrompt);
+  if (input) {
+    input.addEventListener("keydown", (e) => {
+      if (e.key === "Enter") {
+        const textValue = input.value.trim();
+        if (textValue.startsWith("/image ")) {
+          e.preventDefault();
+          e.stopPropagation();
+          const targetPrompt = textValue.replace("/image ", "").trim();
+          input.value = "";
+          if (targetPrompt.length > 0) handleImageGeneration(targetPrompt);
+        } else {
+          handleSend(e);
+        }
       }
-    }
-  });
-}
+    });
+  }
