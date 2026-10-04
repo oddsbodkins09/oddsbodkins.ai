@@ -244,6 +244,7 @@ app.post('/api/generate-image', async (req, res) => {
   }
 });
 // Image Generation Endpoint using active flash image model pipeline
+// Image Generation Endpoint using Standardized Google REST Structure
 app.post('/api/generate-image', async (req, res) => {
   try {
     const { prompt } = req.body;
@@ -255,50 +256,47 @@ app.post('/api/generate-image', async (req, res) => {
       return res.status(500).json({ error: 'Gemini API key is missing on the server.' });
     }
 
-    // Direct HTTP request to the active image generation engine endpoint
+    // Official production structural route format for direct fetch calls
     const response = await fetch(
-      `https://googleapis.com{API_KEY}`,
+      `https://generativelanguage.googleapis.com/v1beta/models/imagen-3.0-generate-002:predict?key=${API_KEY}`,
       {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          contents: [{
-            parts: [{ text: `Generate an image based on this description: ${prompt}` }]
-          }]
+          instances: [
+            { prompt: prompt }
+          ],
+          parameters: {
+            sampleCount: 1,
+            outputMimeType: 'image/jpeg',
+            aspectRatio: '1:1'
+          }
         })
       }
     );
 
-    if (!response.ok) {
-      const errorData = await response.json();
-      console.error('Google AI Image API Error:', errorData);
-      return res.status(response.status).json({ error: 'Image model engine rejected parameters.' });
-    }
-
     const data = await response.json();
-    
-    // Extract base64 image data from the returned content block pipeline parts array
-    let base64Image = null;
-    const parts = data?.candidates?.[0]?.content?.parts || [];
-    for (const part of parts) {
-      if (part.inlineData && part.inlineData.data) {
-        base64Image = part.inlineData.data;
-        break;
-      }
-    }
 
-    if (base64Image) {
+    if (!response.ok) {
+      console.error('Google API Error Payload:', data);
+      return res.status(response.status).json({ error: data?.error?.message || 'Upstream image engine rejected parameters.' });
+    }
+    
+    // Safely extract the generated raw base64 string from the correct matrix location
+    if (data && data.predictions && data.predictions[0] && data.predictions[0].bytesBase64Encoded) {
+      const base64Image = data.predictions[0].bytesBase64Encoded;
       return res.json({ imageUrl: `data:image/jpeg;base64,${base64Image}` });
     } else {
-      console.error('Unexpected layout format from Google:', JSON.stringify(data));
-      return res.status(502).json({ error: 'Google did not return an inline image data stream.' });
+      console.error('Unexpected Google Response Blueprint Structure:', JSON.stringify(data));
+      return res.status(502).json({ error: 'Google response payload did not contain valid base64 image data.' });
     }
 
   } catch (error) {
-    console.error('Image Generation Server Error:', error);
-    res.status(500).json({ error: 'Failed to process backend image generation pipeline.' });
+    console.error('Image Generation Critical Server Error:', error);
+    res.status(500).json({ error: error.message || 'Failed to process backend image generation pipeline.' });
   }
 });
+
 
 
 app.listen(PORT, () => {
