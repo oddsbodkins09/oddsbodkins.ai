@@ -244,6 +244,7 @@ app.post('/api/generate-image', async (req, res) => {
   }
 });
 // Image Generation Endpoint using Imagen 3
+// Image Generation Endpoint using active flash image model pipeline
 app.post('/api/generate-image', async (req, res) => {
   try {
     const { prompt } = req.body;
@@ -255,42 +256,51 @@ app.post('/api/generate-image', async (req, res) => {
       return res.status(500).json({ error: 'Gemini API key is missing on the server.' });
     }
 
-    // Corrected full endpoint pipeline for Google's official Imagen API
+    // Direct HTTP request to the active image generation engine endpoint
     const response = await fetch(
       `https://googleapis.com{API_KEY}`,
       {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          instances: [{ prompt: prompt }],
-          parameters: {
-            sampleCount: 1,
-            outputMimeType: 'image/jpeg',
-            aspectRatio: '1:1',
-          },
-        }),
+          contents: [{
+            parts: [{ text: `Generate an image based on this description: ${prompt}` }]
+          }]
+        })
       }
     );
 
     if (!response.ok) {
       const errorData = await response.json();
-      console.error('Google Imagen API Error Details:', errorData);
-      return res.status(response.status).json({ error: 'Google Imagen API error occurred.' });
+      console.error('Google AI Image API Error:', errorData);
+      return res.status(response.status).json({ error: 'Image model engine rejected parameters.' });
     }
 
     const data = await response.json();
     
-    if (!data.predictions || !data.predictions[0] || !data.predictions[0].bytesBase64Encoded) {
-      throw new Error('Invalid image payload returned from Google');
+    // Extract base64 image data from the returned content block pipeline parts array
+    let base64Image = null;
+    const parts = data?.candidates?.[0]?.content?.parts || [];
+    for (const part of parts) {
+      if (part.inlineData && part.inlineData.data) {
+        base64Image = part.inlineData.data;
+        break;
+      }
     }
-    const base64Image = data.predictions[0].bytesBase64Encoded;
-    
-    res.json({ imageUrl: `data:image/jpeg;base64,${base64Image}` });
+
+    if (base64Image) {
+      return res.json({ imageUrl: `data:image/jpeg;base64,${base64Image}` });
+    } else {
+      console.error('Unexpected layout format from Google:', JSON.stringify(data));
+      return res.status(502).json({ error: 'Google did not return an inline image data stream.' });
+    }
+
   } catch (error) {
     console.error('Image Generation Server Error:', error);
-    res.status(500).json({ error: 'Failed to generate image structure.' });
+    res.status(500).json({ error: 'Failed to process backend image generation pipeline.' });
   }
 });
+
 
 app.listen(PORT, () => {
   console.log(`Zelus AI running at http://localhost:${PORT}`);
