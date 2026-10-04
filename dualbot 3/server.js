@@ -243,7 +243,6 @@ app.post('/api/generate-image', async (req, res) => {
     res.status(500).json({ error: 'Failed to generate image structure.' });
   }
 });
-// Image Generation Endpoint using Imagen 3
 // Image Generation Endpoint using active flash image model pipeline
 app.post('/api/generate-image', async (req, res) => {
   try {
