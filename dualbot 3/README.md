@@ -1,10 +1,10 @@
-# Zelus AI
+# rihara.ai
 
 A tiny chat demo with two personas answering off the same AI model:
 
 - **Straight Bot** — direct, precise, no fluff
 - **ELI5 Bot** — explains everything like you're 8, with analogies
-
+- **Code Bot** - writes codes in any language
 Same question, switch tabs, visibly different answer. You can also attach
 a photo of a question (great for math problems) and it'll work through
 the solution step by step.
