@@ -581,3 +581,56 @@ if (form) {
     }
   }, { capture: true }); 
 }
+
+
+// Automatically turn text instructions into interactive widgets
+function renderInteractiveWidgets() {
+  const messages = document.querySelectorAll('.message-content');
+  messages.forEach(msg => {
+    // Look for the special visualization tag instructions
+    if (msg.innerHTML.includes('&lt;Generate') && !msg.querySelector('.interactive-widget-frame')) {
+      const text = msg.innerHTML;
+      
+      // Extract the prompt details safely out of the text string
+      const match = text.match(/Widget Instructions:\s*([^&<\n]+)/);
+      if (match && match[1]) {
+        const widgetPrompt = match[1].trim();
+        
+        // Clean up the ugly raw code text so the user doesn't see it
+        msg.innerHTML = text.split('&lt;Generate')[0] + '<div class="widget-status-tag">⚡ Interactive Tool Activated</div>';
+        
+        // Inject a dedicated layout panel right into the chat line
+        const widgetContainer = document.createElement('div');
+        widgetContainer.className = 'interactive-widget-frame';
+        widgetContainer.style.margin = '15px 0';
+        widgetContainer.style.padding = '2px';
+        widgetContainer.style.background = 'var(--border)';
+        widgetContainer.style.borderRadius = '12px';
+        widgetContainer.style.overflow = 'hidden';
+        
+        msg.appendChild(widgetContainer);
+        
+        // Trigger the live visual system engine instantly inside the container block
+        if (typeof window.initializeInteractiveModule === 'function') {
+          window.initializeInteractiveModule(widgetContainer, widgetPrompt);
+        } else {
+          // Fallback UI helper card if the local device rendering library is loading
+          widgetContainer.innerHTML = `
+            <div style="padding: 20px; background: var(--surface); text-align: center; color: var(--text-muted);">
+              📊 <strong>Interactive Visualization Engine</strong><br>
+              Building custom dynamic tool for: "${widgetPrompt}"...
+            </div>
+          `;
+        }
+      }
+    }
+  });
+}
+
+// Keep watching the chat thread stream to capture updates instantly
+const threadObserver = new MutationObserver(() => {
+  renderInteractiveWidgets();
+});
+if (document.getElementById('thread')) {
+  threadObserver.observe(document.getElementById('thread'), { childList: true, subtree: true });
+}
