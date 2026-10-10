@@ -223,27 +223,7 @@ app.post('/api/generate-image', async (req, res) => {
           aspectRatio: '1:1',
         }),
       }
-    );
-
-    if (!response.ok) {
-      const errorData = await response.json();
-      console.error('Google Imagen API Error Details:', errorData);
-      return res.status(response.status).json({ error: 'Google Imagen API error occurred.' });
-    }
-
-    const data = await response.json();
     
-    // Extract the raw base64 image string from Google's response format
-    const base64Image = data.generatedImages[0].image.imageBytes;
-    
-    // Send it cleanly back to your frontend app.js handler
-    res.json({ imageUrl: `data:image/jpeg;base64,${base64Image}` });
-  } catch (error) {
-    console.error('Image Generation Server Error:', error);
-    res.status(500).json({ error: 'Failed to generate image structure.' });
-  }
-});
-// Image Generation Endpoint using active flash image model pipeline
 // Image Generation Endpoint using Standardized Google REST Structure
 app.post('/api/generate-image', async (req, res) => {
   try {
@@ -256,7 +236,7 @@ app.post('/api/generate-image', async (req, res) => {
       return res.status(500).json({ error: 'Gemini API key is missing on the server.' });
     }
 
-    // Official production structural route format for direct fetch calls
+    // Official production endpoint pipeline request for direct fetch calls
     const response = await fetch(
       `https://generativelanguage.googleapis.com/v1beta/models/imagen-3.0-generate-002:predict?key=${API_KEY}`,
       {
@@ -282,12 +262,12 @@ app.post('/api/generate-image', async (req, res) => {
       return res.status(response.status).json({ error: data?.error?.message || 'Upstream image engine rejected parameters.' });
     }
     
-    // Safely extract the generated raw base64 string from the correct matrix location
+    // Safely extract the generated raw base64 string from the correct matrix array index
     if (data && data.predictions && data.predictions[0] && data.predictions[0].bytesBase64Encoded) {
       const base64Image = data.predictions[0].bytesBase64Encoded;
       return res.json({ imageUrl: `data:image/jpeg;base64,${base64Image}` });
     } else {
-      console.error('Unexpected Google Response Blueprint Structure:', JSON.stringify(data));
+      console.error('Unexpected Google Response Structure:', JSON.stringify(data));
       return res.status(502).json({ error: 'Google response payload did not contain valid base64 image data.' });
     }
 
@@ -297,8 +277,6 @@ app.post('/api/generate-image', async (req, res) => {
   }
 });
 
-
-
 app.listen(PORT, () => {
-  console.log(`Zelus AI running at http://localhost:${PORT}`);
+  console.log(`Server running at http://localhost:${PORT}`);
 });
