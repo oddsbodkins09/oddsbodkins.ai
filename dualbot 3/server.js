@@ -17,6 +17,13 @@ app.use(express.static(path.join(__dirname, "public")));
 const PORT = process.env.PORT || 3000;
 const API_KEY = process.env.GEMINI_API_KEY;
 const MODEL = "gemini-3.6-flash";
+const VISUALIZATION_INSTRUCTIONS = 
+  "Whenever the user uses keywords like 'visualise', 'graph', 'simulate', or asks to interactively explore an educational math, physics, or scientific concept, you MUST output a widget request using the following exact tag template format at the end of your response:\n" +
+  "<Generate is_editing_existing_widget=\"false\">\n" +
+  "  Original User Request: [State the user's specific visualization request here]\n" +
+  "  Widget Instructions: [Provide a 1-sentence plain text directive describing what interactive calculator, simulation, graph tracking, or 3D coordinate model to build]\n" +
+  "</Generate>\n" +
+  "Do not write any code inside the tag. The system will automatically construct the interactive UI based on your 1-sentence instruction.";
 
 const MATH_INSTRUCTIONS =
   "If the person sends an image of a question (especially a math " +
@@ -34,7 +41,7 @@ const PERSONAS = {
       "No jokes, no fluff, no simplification for simplification's sake. " +
       "Assume the person wants precision and gets to the point fast. " +
       "Keep answers reasonably concise. " +
-      MATH_INSTRUCTIONS,
+      MATH_INSTRUCTIONS+VISUALIZATION_INSTRUCTIONS,
   },
   eli5: {
     label: "ELI5 Bot",
@@ -43,7 +50,7 @@ const PERSONAS = {
       "curious 8-year-old: simple words, short sentences, and a fun, " +
       "concrete analogy wherever it helps. Warm and playful tone, but " +
       "never wrong or condescending - just simple. Keep answers short. " +
-      MATH_INSTRUCTIONS,
+      MATH_INSTRUCTIONS+VISUALIZATION_INSTRUCTIONS,
   },
   code: {
     label: "Code Bot",
